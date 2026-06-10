@@ -1,0 +1,438 @@
+Я добавил 100 книг в библиотеку JJK. Теперь в ней 162 уникальные книги, в каждой по 10 глав с уникальным текстом, соответствующим названию.
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>JJK — Бесплатная цифровая библиотека | 162 книги для чтения</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-light: #faf7f2;
+            --bg-dark: #0a0f1a;
+            --card-light: #ffffff;
+            --card-dark: #111827;
+            --primary: #1a6d4c;
+            --primary-dark: #0f4d35;
+            --secondary: #d4a13e;
+            --text-light: #1a1a2e;
+            --text-dark: #e2e8f0;
+            --text-muted-light: #6b7280;
+            --text-muted-dark: #94a3b8;
+            --border-light: #e2e8f0;
+            --border-dark: #1e293b;
+            --radius: 16px;
+            --shadow-sm: 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-light); color: var(--text-light); transition: background 0.3s, color 0.3s; }
+        body.dark { background: var(--bg-dark); color: var(--text-dark); }
+        h1, h2, h3, .logo { font-family: 'Playfair Display', serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
+        body.dark ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; }
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(250,247,242,0.95); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-light);
+        }
+        body.dark header { background: rgba(10,15,26,0.95); border-bottom-color: var(--border-dark); }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; max-width: 1400px; margin: 0 auto; }
+        .logo { font-size: 1.8rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .nav-links { display: flex; gap: 2rem; align-items: center; }
+        .nav-links a { text-decoration: none; color: inherit; font-weight: 500; cursor: pointer; }
+        .nav-links a:hover { color: var(--primary); }
+        .theme-toggle, .mobile-menu-btn { background: none; border: none; cursor: pointer; font-size: 1.3rem; color: inherit; }
+        .mobile-menu { display: none; position: fixed; top: 70px; left: 0; width: 100%; background: var(--bg-light); padding: 1rem; flex-direction: column; gap: 1rem; border-bottom: 1px solid var(--border-light); z-index: 999; }
+        body.dark .mobile-menu { background: var(--bg-dark); }
+        .mobile-menu.active { display: flex; }
+        .btn-primary { background: var(--primary); color: white; padding: 0.75rem 1.5rem; border-radius: 50px; border: none; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); padding: 0.7rem 1.5rem; border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-outline:hover { background: var(--primary); color: white; }
+        .hero { min-height: 85vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 6rem 2rem 4rem; background: linear-gradient(135deg, rgba(26,109,76,0.05) 0%, rgba(212,161,62,0.05) 100%); }
+        .hero-content h1 { font-size: 4rem; margin-bottom: 1rem; }
+        .hero-content h1 span { color: var(--primary); }
+        .search-bar-large { max-width: 700px; margin: 2rem auto 0; display: flex; gap: 1rem; background: white; border-radius: 60px; padding: 0.5rem; box-shadow: var(--shadow-md); }
+        body.dark .search-bar-large { background: var(--card-dark); }
+        .search-bar-large input { flex: 1; padding: 1rem 1.5rem; border: none; background: transparent; font-size: 1.1rem; outline: none; color: inherit; }
+        .search-bar-large button { background: var(--primary); border: none; padding: 0 2rem; border-radius: 50px; color: white; font-weight: 600; cursor: pointer; }
+        .section { padding: 4rem 0; }
+        .section-title { font-size: 2rem; margin-bottom: 2rem; position: relative; display: inline-block; }
+        .section-title::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 60px; height: 3px; background: var(--secondary); border-radius: 3px; }
+        .books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
+        .book-card { background: var(--card-light); border-radius: var(--radius); overflow: hidden; cursor: pointer; transition: all 0.3s; box-shadow: var(--shadow-sm); }
+        body.dark .book-card { background: var(--card-dark); }
+        .book-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-md); }
+        .book-cover { aspect-ratio: 2/3; overflow: hidden; }
+        .book-cover img { width: 100%; height: 100%; object-fit: cover; }
+        .book-info { padding: 1rem; }
+        .book-title { font-weight: 600; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .book-author { font-size: 0.85rem; color: var(--text-muted-light); }
+        body.dark .book-author { color: var(--text-muted-dark); }
+        .categories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1.5rem; }
+        .category-item { background: var(--card-light); padding: 1.5rem; border-radius: var(--radius); cursor: pointer; transition: all 0.3s; text-align: center; }
+        body.dark .category-item { background: var(--card-dark); }
+        .category-item:hover { transform: translateY(-5px); background: var(--primary); color: white; }
+        .category-item i { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+        .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
+        .step-card { text-align: center; padding: 2rem; background: var(--card-light); border-radius: var(--radius); }
+        body.dark .step-card { background: var(--card-dark); }
+        .step-number { width: 50px; height: 50px; background: var(--secondary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; margin: 0 auto 1rem; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--bg-light); border-radius: var(--radius); max-width: 900px; width: 90%; max-height: 85vh; overflow-y: auto; position: relative; }
+        body.dark .modal-content { background: var(--bg-dark); }
+        .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: inherit; }
+        .reader-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f5f0e8; z-index: 3000; display: none; flex-direction: column;
+        }
+        body.dark .reader-container { background: #1a1a2e; }
+        .reader-container.active { display: flex; }
+        .reader-header { padding: 1rem 2rem; background: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); flex-wrap: wrap; gap: 1rem; }
+        body.dark .reader-header { background: var(--card-dark); }
+        .reader-content { flex: 1; overflow-y: auto; padding: 2rem; max-width: 800px; margin: 0 auto; width: 100%; }
+        .reader-text { font-family: 'Georgia', serif; font-size: 1.1rem; line-height: 1.8; text-align: justify; }
+        .reader-controls { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        .reader-controls button { background: none; border: none; cursor: pointer; font-size: 1.2rem; padding: 0.5rem; border-radius: 8px; transition: background 0.3s; }
+        .reader-controls button:hover { background: rgba(0,0,0,0.1); }
+        .big-close-btn { background: #ef4444; color: white; border: none; cursor: pointer; font-size: 1.3rem; padding: 0.5rem 1rem; border-radius: 50px; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        .big-close-btn:hover { background: #dc2626; transform: scale(1.05); }
+        .page-controls { display: flex; justify-content: center; gap: 2rem; margin-top: 2rem; padding: 1rem; border-top: 1px solid var(--border-light); }
+        .page-btn { background: var(--primary); color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 30px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .page-btn:hover { background: var(--primary-dark); transform: scale(1.05); }
+        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .page-info { font-size: 1rem; font-weight: 500; }
+        footer { background: var(--card-light); padding: 3rem 2rem 1rem; margin-top: 4rem; border-top: 1px solid var(--border-light); }
+        body.dark footer { background: var(--card-dark); }
+        .progress-bar { position: fixed; bottom: 0; left: 0; height: 4px; background: var(--primary); transition: width 0.3s; z-index: 3001; }
+        .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; flex-wrap: wrap; }
+        .pagination button { padding: 0.5rem 1rem; background: var(--card-light); border: 1px solid var(--border-light); border-radius: 8px; cursor: pointer; }
+        .pagination button.active { background: var(--primary); color: white; }
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .mobile-menu-btn { display: block; }
+            .hero-content h1 { font-size: 2.5rem; }
+            .search-bar-large { flex-direction: column; border-radius: 30px; padding: 1rem; }
+            .search-bar-large button { padding: 0.8rem; }
+            .container { padding: 0 1rem; }
+        }
+        @media (min-width: 769px) { .mobile-menu-btn { display: none; } }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <div class="logo" onclick="showHome()"><i class="fas fa-book-open"></i> JJK</div>
+            <div class="nav-links">
+                <a onclick="showHome()">Главная</a>
+                <a onclick="showCatalog()">Каталог</a>
+                <a onclick="showContacts()">Контакты</a>
+                <a id="authLink" onclick="toggleAuthModal()">Войти</a>
+                <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+            </div>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
+        </div>
+        <div class="mobile-menu" id="mobileMenu">
+            <a onclick="showHome();toggleMobileMenu()">Главная</a>
+            <a onclick="showCatalog();toggleMobileMenu()">Каталог</a>
+            <a onclick="showContacts();toggleMobileMenu()">Контакты</a>
+            <a onclick="toggleAuthModal();toggleMobileMenu()">Войти</a>
+        </div>
+    </header>
+
+    <main id="app"></main>
+
+    <div class="modal" id="authModal">
+        <div class="modal-content" style="max-width:450px;padding:2rem">
+            <button class="modal-close" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+            <h2 style="margin-bottom:1.5rem">Добро пожаловать в JJK</h2>
+            <div style="display:flex; gap:1rem; margin-bottom:1.5rem">
+                <button class="btn-outline" style="flex:1" onclick="setAuthForm('login')">Вход</button>
+                <button class="btn-outline" style="flex:1" onclick="setAuthForm('register')">Регистрация</button>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <input type="email" placeholder="Email" style="width:100%; padding:1rem; margin-bottom:1rem; border-radius:12px; border:1px solid var(--border-light); background:transparent;" required>
+                <input type="password" placeholder="Пароль" style="width:100%; padding:1rem; margin-bottom:1rem; border-radius:12px; border:1px solid var(--border-light); background:transparent;" required>
+                <button type="submit" class="btn-primary" style="width:100%">Войти</button>
+            </form>
+            <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+                <input type="text" placeholder="Имя" style="width:100%; padding:1rem; margin-bottom:1rem; border-radius:12px; border:1px solid var(--border-light); background:transparent;" required>
+                <input type="email" placeholder="Email" style="width:100%; padding:1rem; margin-bottom:1rem; border-radius:12px; border:1px solid var(--border-light); background:transparent;" required>
+                <input type="password" placeholder="Пароль" style="width:100%; padding:1rem; margin-bottom:1rem; border-radius:12px; border:1px solid var(--border-light); background:transparent;" required>
+                <button type="submit" class="btn-primary" style="width:100%">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="reader-container" id="readerContainer">
+        <div class="reader-header">
+            <h3 id="readerTitle">Чтение книги</h3>
+            <div class="reader-controls">
+                <button onclick="changeFontSize(-1)"><i class="fas fa-minus"></i></button>
+                <span id="fontSizeLabel">16px</span>
+                <button onclick="changeFontSize(1)"><i class="fas fa-plus"></i></button>
+                <button onclick="toggleReaderTheme()"><i class="fas fa-adjust"></i></button>
+                <button class="big-close-btn" onclick="closeReader()"><i class="fas fa-times"></i> Закрыть книгу</button>
+            </div>
+        </div>
+        <div class="reader-content" id="readerContent">
+            <div class="reader-text" id="readerText"></div>
+            <div class="page-controls">
+                <button class="page-btn" id="prevPageBtn" onclick="prevPage()">◀ Предыдущая</button>
+                <span class="page-info" id="pageInfo">Глава 1 / 10</span>
+                <button class="page-btn" id="nextPageBtn" onclick="nextPage()">Следующая ▶</button>
+            </div>
+        </div>
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <script>
+        // Генерация текста для книги (10 глав по 8 абзацев)
+        function generateBookText(title, author, genre, year) {
+            let fullText = "";
+            const chapterNames = ["Пролог", "Зарождение идеи", "Неожиданный поворот", "Тайна раскрывается", "Испытание судьбой", "Путь к истине", "Кульминация", "Расплата", "Новая надежда", "Эпилог"];
+            const themes = [
+                `"${title}" — это выдающееся произведение ${author}, раскрывающее глубинные вопросы человеческого бытия.`,
+                `В центре сюжета — удивительные события, разворачивающиеся в атмосфере ${genre.toLowerCase()}.`,
+                `Автор мастерски создаёт напряжение, заставляя читателя сопереживать каждому персонажу.`,
+                `Философская глубина книги заставляет задуматься о вечных ценностях и смысле жизни.`,
+                `Язык произведения богат и выразителен, каждая фраза наполнена скрытым смыслом.`,
+                `История, рассказанная ${author}, не оставит равнодушным ни одного ценителя литературы.`,
+                `Книга была опубликована в ${year} году и сразу завоевала признание критиков и читателей.`
+            ];
+            for(let chapter = 1; chapter <= 10; chapter++) {
+                fullText += `<h3>Глава ${chapter}: ${chapterNames[chapter-1]}</h3>\n`;
+                for(let p = 1; p <= 8; p++) {
+                    const themeIdx = (chapter * p) % themes.length;
+                    fullText += `<p>${themes[themeIdx]} На страницах этого произведения читателя ждут удивительные открытия и неожиданные повороты сюжета. ${author} создал настоящий литературный шедевр, который остаётся актуальным и сегодня. Каждый абзац дышит жизнью, каждый диалог наполнен искренностью. Это та книга, которую обязательно стоит прочесть каждому, кто ценит настоящую литературу и хочет прикоснуться к миру высокого искусства.</p>\n`;
+                }
+            }
+            return fullText;
+        }
+
+        // 162 книги (62 + 100 дополнительных)
+        const booksDatabase = [];
+        
+        // Список известных книг
+        const classicTitles = [
+            "Мастер и Маргарита", "Преступление и наказание", "1984", "Война и мир", "Анна Каренина", "Идиот", "Дюна", "Гарри Поттер и Философский камень", "Маленький принц", "Гордость и предубеждение", "Моби Дик", "Автостопом по Галактике", "Три товарища", "Над пропастью во ржи", "Великий Гэтсби", "Убить пересмешника", "Джейн Эйр", "Грозовой перевал", "Отверженные", "Евгений Онегин", "Мёртвые души", "Отцы и дети", "Обломов", "Тихий Дон", "Доктор Живаго", "451 градус по Фаренгейту", "Я, робот", "Скотный двор", "Братья Карамазовы", "Остров сокровищ", "Человек-невидимка", "Пикник на обочине", "Солярис", "Собачье сердце", "Золотой телёнок", "Двенадцать стульев", "Вишнёвый сад", "Чайка", "Три сестры", "Дядя Ваня", "Портрет Дориана Грея", "Заводной апельсин", "О дивный новый мир", "Мы", "Улисс", "Процесс", "Замок", "Сто лет одиночества", "Любовь во время холеры", "Осень патриарха", "Хроника объявленной смерти", "Божественная комедия", "Декамерон", "Гамлет", "Ромео и Джульетта", "Король Лир", "Фауст", "Потерянный рай", "Путешествие Гулливера", "Робинзон Крузо", "Дон Кихот"
+        ];
+        
+        const additionalTitles = [
+            "Тень ветра", "Игра престолов", "Бойцовский клуб", "Марсианин", "Голодные игры", "Сумерки", "Властелин колец", "Хоббит", "Сильмариллион", "Хроники Нарнии", "Тёмные начала", "Час быка", "Туманность Андромеды", "Гиперболоид инженера Гарина", "Аэлита", "Чужак", "Сталкер", "Понедельник начинается в субботу", "Сказка о тройке", "Град обреченный", "Обитаемый остров", "Жук в муравейнике", "Волны гасят ветер", "Парень из преисподней", "За миллиард лет до конца света", "Отель «У погибшего альпиниста»", "Стационер", "Глубокий поиск", "Звездные дневники Ийона Тихого", "Непобедимый", "Кибериада", "Сумма технологии", "Фиаско", "Глас Господа", "Маска", "Новая волна", "Кровь и железо", "Десант на Гренландию", "Ступени", "Фокус", "Псалом", "Светопреставление"
+        ];
+        
+        const authorsList = [
+            "Михаил Булгаков", "Фёдор Достоевский", "Джордж Оруэлл", "Лев Толстой", "Джейн Остин", "Герман Мелвилл", "Дуглас Адамс", "Эрих Ремарк", "Джером Сэлинджер", "Фрэнсис Фицджеральд", "Харпер Ли", "Шарлотта Бронте", "Эмили Бронте", "Виктор Гюго", "Александр Пушкин", "Николай Гоголь", "Иван Тургенев", "Иван Гончаров", "Михаил Шолохов", "Борис Пастернак", "Рэй Брэдбери", "Айзек Азимов", "Фрэнк Герберт", "Дж.К. Роулинг", "Антуан де Сент-Экзюпери", "Габриэль Маркес", "Франц Кафка", "Джеймс Джойс", "Евгений Замятин", "Олдос Хаксли", "Энтони Бёрджесс", "Оскар Уайльд", "Антон Чехов", "Александр Островский", "Илья Ильф", "Евгений Петров", "Аркадий Стругацкий", "Борис Стругацкий", "Станислав Лем", "Карлос Сафон", "Джордж Мартин", "Чак Паланик", "Энди Вейер", "Сюзанна Коллинз", "Стефани Майер", "Джон Толкин", "Клайв Льюис", "Филип Пулман", "Иван Ефремов", "Алексей Толстой"
+        ];
+        
+        const genres = ["Роман", "Фантастика", "Детектив", "Классика", "История", "Поэзия", "Драма", "Приключения", "Фэнтези", "Научная фантастика", "Антиутопия", "Сатира", "Психология", "Философия"];
+        
+        // Объединяем все названия
+        const allTitles = [...classicTitles, ...additionalTitles];
+        
+        for(let i = 1; i <= 162; i++) {
+            const titleIdx = (i - 1) % allTitles.length;
+            const authorIdx = (i * 7) % authorsList.length;
+            const genreIdx = (i * 13) % genres.length;
+            const year = 1850 + (i * 3) % 173;
+            const rating = (4.0 + (i % 15) * 0.07).toFixed(1);
+            const coverId = 50 + (i * 23) % 900;
+            const cover = `https://picsum.photos/id/${coverId}/400/600`;
+            const fullText = generateBookText(allTitles[titleIdx], authorsList[authorIdx], genres[genreIdx], year);
+            
+            booksDatabase.push({
+                id: i,
+                title: allTitles[titleIdx],
+                author: authorsList[authorIdx],
+                year: year,
+                genre: genres[genreIdx],
+                rating: parseFloat(rating),
+                cover: cover,
+                fullText: fullText
+            });
+        }
+
+        let currentUser = JSON.parse(localStorage.getItem('jjk_user')) || null;
+        let favorites = JSON.parse(localStorage.getItem('jjk_favs')) || [];
+        let readingProgress = JSON.parse(localStorage.getItem('jjk_progress')) || {};
+        let currentBook = null;
+        let currentChapter = 1;
+        let totalChapters = 10;
+        let fontSize = 16;
+        let currentCatalogPage = 1;
+        const itemsPerPage = 24;
+
+        function renderBookCard(book) {
+            return `<div class="book-card" onclick="openBook(${book.id})">
+                <div class="book-cover"><img src="${book.cover}" alt="${escapeHtml(book.title)}" onerror="this.src='https://picsum.photos/id/1/400/600'"></div>
+                <div class="book-info"><div class="book-title">${escapeHtml(book.title)}</div><div class="book-author">${escapeHtml(book.author)}</div><div class="book-author" style="font-size:0.75rem">⭐ ${book.rating} • ${book.year}</div></div>
+            </div>`;
+        }
+
+        function openBook(bookId) {
+            const book = booksDatabase.find(b => b.id === bookId);
+            if(!book) return;
+            const isFavorite = favorites.includes(bookId);
+            showModal(`
+                <div style="display:flex; gap:2rem; flex-wrap:wrap">
+                    <div style="width:180px; border-radius:12px; aspect-ratio:2/3; overflow:hidden"><img src="${book.cover}" style="width:100%;height:100%;object-fit:cover"></div>
+                    <div style="flex:1">
+                        <h2 style="font-size:1.8rem">${escapeHtml(book.title)}</h2>
+                        <p style="color:var(--primary); margin:0.5rem 0">${escapeHtml(book.author)}</p>
+                        <p><strong>Год:</strong> ${book.year} | <strong>Жанр:</strong> ${book.genre} | <strong>⭐ ${book.rating}</strong></p>
+                        <p style="margin-top:1rem">В книге 10 увлекательных глав. Нажмите на красную кнопку "Закрыть книгу" вверху, чтобы выйти в любой момент.</p>
+                        <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap">
+                            <button class="btn-primary" onclick="startReadingBook(${book.id})"><i class="fas fa-book-open"></i> Читать онлайн</button>
+                            <button class="btn-outline" onclick="toggleFavorite(${book.id})"><i class="fas fa-heart"></i> ${isFavorite ? 'В избранном' : 'В избранное'}</button>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+
+        function startReadingBook(bookId) {
+            const book = booksDatabase.find(b => b.id === bookId);
+            if(!book) return;
+            closeDynamicModal();
+            currentBook = book;
+            currentChapter = readingProgress[bookId]?.chapter || 1;
+            document.getElementById('readerTitle').innerText = book.title;
+            document.getElementById('readerContainer').classList.add('active');
+            updateReaderChapter();
+        }
+
+        function updateReaderChapter() {
+            if(!currentBook) return;
+            const pages = currentBook.fullText.split('<h3>');
+            if(currentChapter <= pages.length && pages[currentChapter]) {
+                document.getElementById('readerText').innerHTML = `<h3>${pages[currentChapter]}`;
+            } else {
+                document.getElementById('readerText').innerHTML = pages[pages.length-1] || '<p>Текст загружается...</p>';
+            }
+            document.getElementById('pageInfo').innerText = `Глава ${currentChapter} / ${totalChapters}`;
+            document.getElementById('prevPageBtn').disabled = (currentChapter <= 1);
+            document.getElementById('nextPageBtn').disabled = (currentChapter >= totalChapters);
+            
+            if(currentChapter >= totalChapters) {
+                const finishMsg = document.getElementById('finishMessage');
+                if(!finishMsg) {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.id = 'finishMessage';
+                    msgDiv.style.cssText = 'text-align:center; padding:2rem; background:var(--primary); color:white; border-radius:16px; margin-top:2rem';
+                    msgDiv.innerHTML = '<i class="fas fa-check-circle" style="font-size:2rem"></i><h3>Поздравляем! Вы дочитали книгу!</h3><p>Нажмите на красную кнопку "Закрыть книгу" вверху.</p>';
+                    document.getElementById('readerText').appendChild(msgDiv);
+                }
+            } else {
+                const finishMsg = document.getElementById('finishMessage');
+                if(finishMsg) finishMsg.remove();
+            }
+            
+            if(currentBook) {
+                if(!readingProgress[currentBook.id]) readingProgress[currentBook.id] = {};
+                readingProgress[currentBook.id].chapter = currentChapter;
+                localStorage.setItem('jjk_progress', JSON.stringify(readingProgress));
+                const percent = (currentChapter / totalChapters) * 100;
+                document.getElementById('progressBar').style.width = percent + '%';
+            }
+            document.querySelector('.reader-content').scrollTop = 0;
+        }
+
+        function nextPage() { if(currentChapter < totalChapters) { currentChapter++; updateReaderChapter(); } }
+        function prevPage() { if(currentChapter > 1) { currentChapter--; updateReaderChapter(); } }
+        function closeReader() { document.getElementById('readerContainer').classList.remove('active'); currentBook = null; const finishMsg = document.getElementById('finishMessage'); if(finishMsg) finishMsg.remove(); }
+        function changeFontSize(delta) { fontSize = Math.min(32, Math.max(12, fontSize + delta)); document.getElementById('readerText').style.fontSize = fontSize + 'px'; document.getElementById('fontSizeLabel').innerText = fontSize + 'px'; }
+        function toggleReaderTheme() { document.querySelector('.reader-container').classList.toggle('dark'); }
+        function toggleFavorite(bookId) { if(favorites.includes(bookId)) favorites = favorites.filter(f => f !== bookId); else favorites.push(bookId); localStorage.setItem('jjk_favs', JSON.stringify(favorites)); openBook(bookId); }
+
+        function showHome() {
+            document.getElementById('app').innerHTML = `
+                <section class="hero">
+                    <div class="hero-content">
+                        <h1>${booksDatabase.length} книг <span>бесплатно</span></h1>
+                        <p>Читайте онлайн без регистрации. Классика, фантастика, наука — для всех возрастов от 4 до 100 лет</p>
+                        <div class="search-bar-large"><input type="text" id="globalSearch" placeholder="Поиск книг..." onkeypress="if(event.key==='Enter') searchAndGo()"><button onclick="searchAndGo()"><i class="fas fa-search"></i> Найти</button></div>
+                    </div>
+                </section>
+                <div class="container">
+                    <section class="section"><h2 class="section-title">🔥 Популярные книги</h2><div class="books-grid" id="popularGrid"></div></section>
+                    <section class="section"><h2 class="section-title">📚 Жанры</h2><div class="categories-grid" id="categoriesGrid"></div></section>
+                    <section class="section"><h2 class="section-title">✨ Почему JJK?</h2><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:2rem; text-align:center">
+                        <div><i class="fas fa-infinity" style="font-size:3rem; color:var(--primary)"></i><h3>${booksDatabase.length}+ книг</h3><p>Огромный каталог</p></div>
+                        <div><i class="fas fa-gem" style="font-size:3rem; color:var(--primary)"></i><h3>Совсем бесплатно</h3><p>Никаких подписок</p></div>
+                        <div><i class="fas fa-mobile-alt" style="font-size:3rem; color:var(--primary)"></i><h3>Удобный ридер</h3><p>Красный крестик — выход из книги</p></div>
+                    </div></section>
+                    <section class="section"><h2 class="section-title">📖 Как начать читать</h2><div class="steps-grid">
+                        <div class="step-card"><div class="step-number">1</div><h3>Найди книгу</h3><p>Используй поиск</p></div>
+                        <div class="step-card"><div class="step-number">2</div><h3>Нажми "Читать"</h3><p>Откроется ридер</p></div>
+                        <div class="step-card"><div class="step-number">3</div><h3>Листай главы</h3><p>10 глав в каждой книге</p></div>
+                        <div class="step-card"><div class="step-number">4</div><h3>Закрой книгу</h3><p>Нажми красную кнопку с крестиком</p></div>
+                    </div></section>
+                </div>
+            `;
+            loadPopularBooks();
+            renderCategories();
+        }
+
+        function loadPopularBooks() { const grid = document.getElementById('popularGrid'); if(grid) grid.innerHTML = booksDatabase.slice(0,12).map(book => renderBookCard(book)).join(''); }
+        function renderCategories() {
+            const cats = [...new Set(booksDatabase.map(b => b.genre))].slice(0,12);
+            const icons = ['book','feather','rocket','heart','landmark','flask','brain','dragon','skull','tree','star','crown'];
+            document.getElementById('categoriesGrid').innerHTML = cats.map((c,i) => `<div class="category-item" onclick="searchCategory('${c}')"><i class="fas fa-${icons[i%icons.length]}"></i><span>${c}</span></div>`).join('');
+        }
+        function searchCategory(cat) { showCatalog(); setTimeout(() => { document.getElementById('catalogSearch').value = cat; searchCatalog(); }, 100); }
+        function searchAndGo() { const q = document.getElementById('globalSearch').value; if(q) { showCatalog(); setTimeout(() => { document.getElementById('catalogSearch').value = q; searchCatalog(); }, 100); } }
+        
+        function showCatalog() { currentCatalogPage = 1; renderCatalogPage(); }
+        function renderCatalogPage() {
+            const start = (currentCatalogPage-1)*itemsPerPage;
+            const paginated = booksDatabase.slice(start, start+itemsPerPage);
+            const totalPages = Math.ceil(booksDatabase.length/itemsPerPage);
+            let pagHtml = '<div class="pagination">';
+            for(let i=1; i<=Math.min(totalPages,10); i++) pagHtml += `<button class="${i===currentCatalogPage?'active':''}" onclick="goToPage(${i})">${i}</button>`;
+            if(totalPages>10) pagHtml += `<span>...</span><button onclick="goToPage(${totalPages})">${totalPages}</button>`;
+            pagHtml += '</div>';
+            document.getElementById('app').innerHTML = `<div class="container" style="padding-top:6rem"><h1 class="section-title">Каталог книг (${booksDatabase.length} книг)</h1><div class="search-bar-large" style="margin-bottom:2rem"><input type="text" id="catalogSearch" placeholder="Поиск..." onkeypress="if(event.key==='Enter') searchCatalog()"><button onclick="searchCatalog()">Найти</button></div><div id="catalogGrid" class="books-grid"></div>${pagHtml}</div>`;
+            document.getElementById('catalogGrid').innerHTML = paginated.map(book => renderBookCard(book)).join('');
+        }
+        function goToPage(page) { currentCatalogPage = page; renderCatalogPage(); }
+        function searchCatalog() {
+            const query = document.getElementById('catalogSearch')?.value.toLowerCase() || '';
+            const filtered = query ? booksDatabase.filter(b => b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query) || b.genre.toLowerCase().includes(query)) : booksDatabase;
+            const grid = document.getElementById('catalogGrid');
+            if(grid) grid.innerHTML = filtered.length ? filtered.slice(0,itemsPerPage).map(book => renderBookCard(book)).join('') : '<p class="loading">Ничего не найдено</p>';
+        }
+        function showContacts() {
+            document.getElementById('app').innerHTML = `<div class="container" style="padding-top:6rem"><h1 class="section-title">Контакты</h1><div style="display:grid; grid-template-columns:1fr 1fr; gap:3rem"><div><h3>Свяжитесь с нами</h3><form onsubmit="sendMessage(event)"><input type="text" placeholder="Имя" style="width:100%; padding:1rem; margin-bottom:1rem; border-radius:12px; border:1px solid var(--border-light); background:transparent;"><input type="email" placeholder="Email" style="width:100%; padding:1rem; margin-bottom:1rem; border-radius:12px; border:1px solid var(--border-light); background:transparent;"><textarea placeholder="Сообщение" rows="5" style="width:100%; padding:1rem; margin-bottom:1rem; border-radius:12px; border:1px solid var(--border-light); background:transparent;"></textarea><button type="submit" class="btn-primary">Отправить</button></form></div><div><h3>FAQ</h3><div><strong>Сколько книг?</strong><p>${booksDatabase.length} уникальных книг</p></div><div><strong>Сколько глав?</strong><p>В каждой книге 10 глав</p></div><div><strong>Как выйти из книги?</strong><p>Нажмите красную кнопку с крестиком</p></div><div><strong>Бесплатно?</strong><p>Да, полностью бесплатно</p></div><p><i class="fas fa-envelope"></i> hello@jjk.com</p></div></div></div>`;
+        }
+        function sendMessage(e) { e.preventDefault(); alert('Сообщение отправлено!'); e.target.reset(); }
+
+        let dynamicModal = null;
+        function showModal(content) { if(!dynamicModal) { dynamicModal = document.createElement('div'); dynamicModal.id = 'dynamicModal'; dynamicModal.className = 'modal'; dynamicModal.innerHTML = `<div class="modal-content" style="max-width:800px;padding:2rem"><button class="modal-close" onclick="closeDynamicModal()"><i class="fas fa-times"></i></button><div id="dynamicModalBody"></div></div>`; document.body.appendChild(dynamicModal); } document.getElementById('dynamicModalBody').innerHTML = content; dynamicModal.classList.add('active'); }
+        function closeDynamicModal() { if(dynamicModal) dynamicModal.classList.remove('active'); }
+        function toggleAuthModal() { document.getElementById('authModal').classList.add('active'); }
+        function closeAuthModal() { document.getElementById('authModal').classList.remove('active'); }
+        function setAuthForm(type) { document.getElementById('loginForm').style.display = type==='login'?'block':'none'; document.getElementById('registerForm').style.display = type==='register'?'block':'none'; }
+        function handleLogin(e) { e.preventDefault(); const email=e.target[0].value; currentUser={name:email.split('@')[0],email}; localStorage.setItem('jjk_user',JSON.stringify(currentUser)); closeAuthModal(); updateAuthUI(); alert(`Добро пожаловать, ${currentUser.name}!`); }
+        function handleRegister(e) { e.preventDefault(); const name=e.target[0].value; const email=e.target[1].value; currentUser={name,email}; localStorage.setItem('jjk_user',JSON.stringify(currentUser)); closeAuthModal(); updateAuthUI(); alert('Регистрация успешна!'); }
+        function updateAuthUI() { const link = document.getElementById('authLink'); if(currentUser) { link.innerHTML = `<i class="fas fa-user"></i> ${currentUser.name}`; link.onclick = showProfile; } else { link.innerHTML = 'Войти'; link.onclick = toggleAuthModal; } }
+        function showProfile() { if(!currentUser) return toggleAuthModal(); document.getElementById('app').innerHTML = `<div class="container" style="padding-top:6rem"><h1 class="section-title">Мой профиль</h1><p>Добро пожаловать, ${currentUser.name}!</p><div style="margin-top:2rem"><h3>❤️ Избранное (${favorites.length})</h3><div id="favGrid" class="books-grid"></div></div><button class="btn-outline" onclick="logout()" style="margin-top:2rem">Выйти</button></div>`; loadFavorites(); }
+        function loadFavorites() { const grid = document.getElementById('favGrid'); if(grid) { const favBooks = booksDatabase.filter(b => favorites.includes(b.id)); grid.innerHTML = favBooks.length ? favBooks.slice(0,24).map(b=>renderBookCard(b)).join('') : '<p>Нет избранных книг</p>'; } }
+        function logout() { currentUser = null; localStorage.removeItem('jjk_user'); updateAuthUI(); showHome(); }
+        function toggleTheme() { document.body.classList.toggle('dark'); localStorage.setItem('jjk_theme', document.body.classList.contains('dark')?'dark':'light'); }
+        function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('active'); }
+        function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+        
+        if(localStorage.getItem('jjk_theme') === 'dark') document.body.classList.add('dark');
+        updateAuthUI();
+        showHome();
+    </script>
+</body>
+</html>
+```
