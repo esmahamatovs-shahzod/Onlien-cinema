@@ -1,0 +1,586 @@
+import React, { useState, useEffect, useRef } from "react";
+import "./App.css";
+
+// База текстов
+const SENTENCES = {
+  ru: [
+    "Искусственный интеллект и современные технологии развиваются с невероятной скоростью, меняя привычный уклад жизни миллионов людей на всей планете. Сегодня умение быстро адаптироваться к изменениям, изучать новые языки программирования и понимать сложные алгоритмы становится одним из ключевых навыков для успешной карьеры в любой сфере.",
+    "Настоящие достижения — это результат долгой, кропотливой работы, сотен часов практики и умения подниматься после каждого падения. Когда вы тренируете навык слепой печати, ваш мозг формирует новые нейронные связи, позволяя со временем выполнять действия на автомате, освобождая ресурс для творчества.",
+    "Технологии меняют наш мир, открывая новые возможности для каждого человека, стремящегося к постоянному развитию и получению новых знаний. Важно не просто плыть по течению, а осознанно подходить к каждому шагу, развивая критическое мышление."
+  ],
+  en: [
+    "The advancement of modern technology and artificial intelligence is fundamentally reshaping how humanity communicates, works, and solves complex global challenges. In this rapidly changing landscape, the ability to write clean code, analyze massive amounts of data, and master touch typing is becoming an invaluable asset.",
+    "Consistency and discipline are far more important than fleeting bursts of motivation when building a sustainable future. Professional typists spend years perfecting their muscle memory to achieve blazing fast speeds exceeding one hundred words per minute without looking down.",
+    "A journey of a thousand miles always begins with a single, often hesitant step into the unknown. As we look forward to the next generation of space exploration and quantum computing, we must remember that keeping our curiosity alive is the ultimate driving force."
+  ],
+  uz: [
+    "Zamonaviy texnologiyalar va sun'iy intellekt dunyoni misli ko'rilmagan tezlikda o'zgartirmoqda, bu esa har bir insondan yangi bilimlarni egallashni talab etadi. Bugungi kunda dasturlash asoslarini tushunish, ma'lumotlar bilan ishlash va kompyuterda tez yozish ko'nikmasi kelajakda muvaffaqiyatli mutaxassis bo'lish uchun juda muhimdir.",
+    "Muvaffaqiyat kaliti ko'pincha tasodifiy omadga emas, balki tinimsiz mehnat va har kuni qilinadigan kichik harakatlarga bog'liq bo'ladi. Klaviaturada qarovsiz tez yozishni o'rganayotganingizda, miyangiz yangi neyron aloqalarini shakllantiradi va vaqt o'tishi bilan bu jarayon to'liq avtomatlashadi.",
+    "Eng muhimi — birinchi muvaffaqiyatsizlikdan keyin taslim bo'lmaslik va belgilangan maqsad sari har kuni dadil qadam tashlashdir. Yangi texnologiyalarni o'rganish va ularni hayotga tatbiq etish yoshlar uchun juda katta imkoniyatlar eshigini ochib beradi."
+  ]
+};
+
+function App() {
+  const [lang, setLang] = useState("ru");
+  const [mode, setMode] = useState("solo"); 
+  const [timeMode, setTimeMode] = useState(30); 
+  
+  const [text, setText] = useState("");
+  const [input, setInput] = useState("");
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [startTime, setStartTime] = useState(null);
+  const [wpm, setWpm] = useState(0);
+  const [accuracy, setAccuracy] = useState(100);
+  const [isFinished, setIsFinished] = useState(false);
+
+  const [roomId, setRoomId] = useState("");
+  const [playerName, setPlayerName] = useState(`Coder_${Math.floor(Math.random() * 900 + 100)}`);
+  const [bots, setBots] = useState([]);
+
+  const intervalRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Обычная локальная генерация текста
+  const generateLocalText = (selectedLang) => {
+    const arr = SENTENCES[selectedLang];
+    const randomText = arr[Math.floor(Math.random() * arr.length)];
+    setText(randomText || "");
+  };
+
+  useEffect(() => {
+    generateLocalText(lang);
+  }, []);
+
+  const startNewGame = (selectedLang = lang, selectedMode = mode, selectedTime = timeMode) => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    
+    setInput("");
+    setStartTime(null);
+    setTimeLeft(selectedTime);
+    setWpm(0);
+    setAccuracy(100);
+    setIsFinished(false);
+
+    generateLocalText(selectedLang);
+    setBots([
+      { id: 1, name: "⚡ Shaxzod_Pro", progress: 0, speed: Math.floor(Math.random() * 20) + 45 },
+      { id: 2, name: "🚀 CyberTyper", progress: 0, speed: Math.floor(Math.random() * 20) + 55 }
+    ]);
+
+    setTimeout(() => {
+      if (inputRef.current) inputRef.current.focus();
+    }, 50);
+  };
+
+  useEffect(() => {
+    startNewGame(lang, "solo", timeMode);
+  }, [lang, timeMode]);
+
+  // Таймер игры
+  useEffect(() => {
+    if (startTime && !isFinished) {
+      intervalRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            setIsFinished(true);
+            clearInterval(intervalRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+
+        setBots((prevBots) =>
+          prevBots.map((bot) => {
+            if (bot.progress >= 100) return bot;
+            const charPerSecond = (bot.speed * 5) / 60;
+            const increment = (charPerSecond / (text.length || 1)) * 100;
+            return { ...bot, progress: Math.min(bot.progress + increment, 100) };
+          })
+        );
+      }, 1000);
+    }
+
+    return () => clearInterval(intervalRef.current);
+  }, [startTime, isFinished, text]);
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    
+    let currentStartTime = startTime;
+    if (!startTime && val.length === 1) {
+      currentStartTime = Date.now();
+      setStartTime(currentStartTime);
+    }
+
+    if (val.length <= text.length) {
+      setInput(val);
+      
+      let currentWpm = 0;
+      let currentAcc = 100;
+
+      if (currentStartTime) {
+        const timePassedMin = (Date.now() - currentStartTime) / 1000 / 60;
+        if (timePassedMin > 0) {
+          currentWpm = Math.round((val.length / 5) / timePassedMin);
+          setWpm(currentWpm);
+        }
+
+        let errors = 0;
+        for (let i = 0; i < val.length; i++) {
+          if (val[i] !== text[i]) errors++;
+        }
+        currentAcc = Math.round(val.length > 0 ? ((val.length - errors) / val.length) * 100 : 100);
+        setAccuracy(currentAcc);
+      }
+
+      if (val === text) {
+        setIsFinished(true);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+      }
+    }
+  };
+
+  const renderText = () => {
+    if (!text) return null;
+    return text.split("").map((char, index) => {
+      let className = "char";
+      if (index < input.length) {
+        className += input[index] === char ? " correct" : " incorrect";
+      } else if (index === input.length) {
+        className += " active";
+      }
+      return <span key={index} className={className}>{char}</span>;
+    });
+  };
+
+  const userProgress = text.length > 0 ? (input.length / text.length) * 100 : 0;
+
+  return (
+    <div className="app-container" onKeyDown={(e) => e.key === "Enter" && startNewGame()} tabIndex="0">
+      <header className="header">
+        <div className="logo" onClick={() => startNewGame()}>
+          <span className="yellow">⚡ typer</span>camp
+        </div>
+        
+        <div className="controls">
+          <div className="modes">
+            <button className="active">🦧 Одиночная (Боты)</button>
+            <button onClick={() => alert("Для мультиплеера нужно установить socket.io через npm")}>⚔️ Онлайн (Заблокировано)</button>
+          </div>
+
+          <div className="time-selector">
+            {[15, 30, 60].map((t) => (
+              <button key={t} className={timeMode === t ? "active" : ""} onClick={() => setTimeMode(t)}>
+                🕒 {t}s
+              </button>
+            ))}
+          </div>
+
+          <div className="languages">
+            <button className={lang === "ru" ? "active" : ""} onClick={() => setLang("ru")}>RU</button>
+            <button className={lang === "uz" ? "active" : ""} onClick={() => setLang("uz")}>UZ</button>
+            <button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")}>EN</button>
+          </div>
+        </div>
+      </header>
+
+      <div className="race-track">
+        <div className="car-lane user-lane">
+          <div className="player-info">{playerName} (Вы) <span className="speed-tag">{wpm} WPM</span></div>
+          <div className="track-bar">
+            <div className="car" style={{ left: `${userProgress}%` }}>🏎️💨</div>
+          </div>
+        </div>
+        
+        {bots.map(bot => (
+          <div key={bot.id} className="car-lane">
+            <div className="player-info">{bot.name} <span className="speed-tag">{Math.round(bot.progress >= 100 ? bot.speed : bot.speed * 0.85)} WPM</span></div>
+            <div className="track-bar">
+              <div className="car" style={{ left: `${bot.progress}%` }}>🚗</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <main className="main-content">
+        <div className="live-stats">
+          <div className="stat-box"><span className="label">time</span><span className="val yellow">{timeLeft}s</span></div>
+          <div className="stat-box"><span className="label">wpm</span><span className="val">{wpm}</span></div>
+          <div className="stat-box"><span className="label">acc</span><span className="val">{accuracy}%</span></div>
+        </div>
+
+        <div className="words-container" onClick={() => inputRef.current?.focus()}>
+          {renderText()}
+        </div>
+
+        <input
+          ref={inputRef}
+          id="type-input"
+          type="text"
+          value={input}
+          onChange={handleInputChange}
+          disabled={isFinished}
+          autoFocus
+          autoComplete="off"
+        />
+
+        {isFinished && (
+          <div className="result-modal">
+            <h2>🎉 Гонка завершена!</h2>
+            <div className="final-stats">
+              <p>Ваша скорость: <strong>{wpm} WPM</strong></p>
+              <p>Точность: <strong>{accuracy}%</strong></p>
+            </div>
+            <button className="restart-btn" onClick={() => startNewGame()}>Играть снова 🔁</button>
+          </div>
+        )}
+        
+        {!isFinished && <button className="restart-btn-small" onClick={() => startNewGame()}>Заново (Enter) 🔁</button>}
+      </main>
+
+      <footer className="footer">
+        Coody Camp. Нажмите <kbd>Enter</kbd> для мгновенного перезапуска текста.
+      </footer>
+    </div>
+  );
+}
+
+export default App;
+
+
+
+/* Палитра в стиле Coding Camp (Cyberpunk / Tech Dark) */
+:root {
+  --bg-color: #0d1117;        /* Глубокий темный фон (как в GitHub/Coding Camp) */
+  --sub-alt-color: #161b22;    /* Цвет блоков и панелей */
+  --main-color: #58a6ff;       /* Электрический голубой / бирюзовый для акцентов */
+  --accent-color: #8957e5;     /* Фиолетовый неоновый для режима гонок */
+  --caret-color: #58a6ff;      /* Цвет курсора */
+  --sub-color: #8b949e;        /* Цвет неактивного текста */
+  --text-color: #f0f6fc;       /* Яркий белый для правильных букв */
+  --error-color: #ff7b72;      /* Мягкий красный для ошибок */
+  --success-color: #3fb950;    /* Зеленый для финиша */
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Fira Code', 'Courier New', Courier, monospace; /* Шрифт программистов */
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-container {
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 90vh;
+  justify-content: space-between;
+}
+
+/* Шапка / Хедер в стиле IT-платформы */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  border-bottom: 1px solid #21262d;
+  padding-bottom: 20px;
+}
+
+.logo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.logo .yellow {
+  color: var(--main-color);
+  text-shadow: 0 0 10px rgba(88, 166, 255, 0.3);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: var(--sub-alt-color);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #30363d;
+}
+
+/* Переключатели времени, режимов и языков */
+.time-selector, .modes, .languages {
+  display: flex;
+  gap: 4px;
+  border-right: 1px solid #30363d;
+  padding-right: 12px;
+}
+
+.languages {
+  border-right: none;
+  padding-right: 0;
+}
+
+button {
+  background: transparent;
+  border: none;
+  color: var(--sub-color);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+button:hover {
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+button.active {
+  color: var(--bg-color);
+  background: var(--main-color);
+  box-shadow: 0 0 12px rgba(88, 166, 255, 0.4);
+}
+
+/* Режим гонки (Трасса в стиле лагеря кодинга) */
+.race-track {
+  background: var(--sub-alt-color);
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 35px;
+  border: 1px solid #30363d;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.car-lane {
+  margin-bottom: 20px;
+}
+
+.car-lane:last-child {
+  margin-bottom: 0;
+}
+
+.player-info {
+  font-size: 0.85rem;
+  color: var(--sub-color);
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+}
+
+.user-lane .player-info {
+  color: var(--main-color);
+  font-weight: 700;
+}
+
+.speed-tag {
+  font-size: 0.8rem;
+  background: var(--bg-color);
+  border: 1px solid #30363d;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--text-color);
+}
+
+.track-bar {
+  position: relative;
+  height: 12px;
+  background: var(--bg-color);
+  border-radius: 6px;
+  border: 1px solid #21262d;
+}
+
+.car {
+  position: absolute;
+  font-size: 1.5rem;
+  top: -12px;
+  transition: left 0.4s cubic-bezier(0.1, 0.8, 0.25, 1);
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
+}
+
+/* Главный блок ввода (Стиль редактора кода) */
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: var(--sub-alt-color);
+  border-radius: 16px;
+  border: 1px solid #30363d;
+  padding: 40px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Живая Статистика */
+.live-stats {
+  display: flex;
+  gap: 50px;
+  margin-bottom: 35px;
+}
+
+.stat-box {
+  text-align: center;
+}
+
+.stat-box .label {
+  display: block;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--sub-color);
+  margin-bottom: 5px;
+}
+
+.stat-box .val {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.stat-box .val.yellow {
+  color: var(--accent-color);
+  text-shadow: 0 0 15px rgba(137, 87, 229, 0.4);
+}
+
+/* Контейнер с текстом */
+.words-container {
+  font-size: 1.6rem;
+  line-height: 2.6rem;
+  color: #484f58; /* Приглушенный цвет для ненабранных букв */
+  cursor: text;
+  word-wrap: break-word;
+  text-align: left;
+  user-select: none;
+  margin-bottom: 30px;
+  max-width: 900px;
+  letter-spacing: 0.5px;
+}
+
+/* Буквы */
+.char {
+  position: relative;
+  transition: color 0.05s ease, background-color 0.05s ease;
+}
+
+.char.correct {
+  color: var(--text-color); /* Белый или светло-голубой */
+}
+
+.char.incorrect {
+  color: var(--error-color);
+  background: rgba(248, 81, 73, 0.15);
+  border-radius: 3px;
+}
+
+/* Каретка / Курсор */
+.char.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 2px;
+  height: 100%;
+  background-color: var(--caret-color);
+  box-shadow: 0 0 8px var(--caret-color);
+  animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* Скрытый инпут */
+#type-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Окно результатов (Финиш) */
+.result-modal {
+  background: var(--bg-color);
+  border: 1px solid var(--success-color);
+  padding: 35px;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 10px;
+  box-shadow: 0 0 20px rgba(63, 185, 80, 0.2);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result-modal h2 {
+  color: var(--success-color);
+  margin-top: 0;
+  font-size: 1.6rem;
+}
+
+.final-stats p {
+  font-size: 1.3rem;
+  margin: 12px 0;
+  color: var(--sub-color);
+}
+
+.final-stats strong {
+  color: var(--main-color);
+}
+
+/* Кнопки перезапуска */
+.restart-btn {
+  background: var(--success-color);
+  color: var(--bg-color);
+  font-size: 1rem;
+  margin-top: 20px;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-weight: 700;
+}
+
+.restart-btn:hover {
+  background: #46cd5a;
+  box-shadow: 0 0 15px rgba(63, 185, 80, 0.4);
+  color: var(--bg-color);
+}
+
+.restart-btn-small {
+  margin-top: 10px;
+  background: transparent;
+  border: 1px solid #30363d;
+  color: var(--sub-color);
+}
+
+.restart-btn-small:hover {
+  color: var(--main-color);
+  border-color: var(--main-color);
+}
+
+/* Футер */
+.footer {
+  text-align: center;
+  color: #484f58;
+  font-size: 0.8rem;
+  margin-top: 40px;
+}
+
+kbd {
+  background: #21262d;
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid #30363d;
+  color: var(--sub-color);
+}
