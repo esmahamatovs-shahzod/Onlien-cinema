@@ -1,0 +1,243 @@
+import { Telegraf, Markup } from 'telegraf';
+
+// Замените ТОКЕН на ваш собственный, полученный от @BotFather
+const bot = new Telegraf('8967742832:AAHohtZExXYE0fd5XH3VbbGjE-nH2AYY2hA');
+
+// База данных из 60 вопросов по HTML, CSS и JavaScript
+const quizQuestions = [
+  // === HTML (1-20) ===
+  { question: 'Что означает аббревиатура HTML?', options: ['HyperText Markup Language', 'HighText Marking Language', 'HyperText Markdown Language', 'Hyperlink Text Management Language'], correct: 0 },
+  { question: 'Какой тег используется для создания ссылки?', options: ['<link>', '<a>', '<href>', '<url>'], correct: 1 },
+  { question: 'Какой тег предназначен для создания самого важного заголовка?', options: ['<heading>', '<h6>', '<head>', '<h1>'], correct: 3 },
+  { question: 'С помощью какого тега создается перенос строки?', options: ['<br>', '<hr>', '<break>', '<p>'], correct: 0 },
+  { question: 'Какой атрибут указывает путь к изображению в теге <img>?', options: ['link', 'href', 'src', 'source'], correct: 2 },
+  { question: 'Каким тегом создается маркированный (ненумерованный) список?', options: ['<ol>', '<ul>', '<li>', '<list>'], correct: 1 },
+  { question: 'Какой тег используется для создания таблицы?', options: ['<table>', '<grid>', '<tab>', '<data>'], correct: 0 },
+  { question: 'В каком элементе хранятся метаданные страницы (заголовок, кодировка)?', options: ['<body>', '<meta>', '<head>', '<html>'], correct: 2 },
+  { question: 'Какой тег является контейнером для строчных элементов?', options: ['<div>', '<span>', '<p>', '<section>'], correct: 1 },
+  { question: 'Какой тег используется для отображения программного кода?', options: ['<code>', '<pre>', '<script>', '<text>'], correct: 0 },
+  { question: 'Какой атрибут открывает ссылку в новой вкладке?', options: ['target="_self"', 'target="_blank"', 'target="_new"', 'new-tab="true"'], correct: 1 },
+  { question: 'Для чего нужен тег <canvas>?', options: ['Для создания форм', 'Для вставки аудио', 'Для рисования графики через JS', 'Для создания таблиц'], correct: 2 },
+  { question: 'Какой тег используется для подключения внешнего файла стилей CSS?', options: ['<style>', '<link>', '<css>', '<script>'], correct: 1 },
+  { question: 'Какое назначение у атрибута alt в теге <img>?', options: ['Альтернативный текст для картинки', 'Ссылка на картинку', 'Ширина картинки', 'Класс анимации'], correct: 0 },
+  { question: 'Какое значение имеет атрибут type у кнопки отправки формы по умолчанию?', options: ['button', 'reset', 'submit', 'action'], correct: 2 },
+  { question: 'Какой HTML5 тег используется для навигации?', options: ['<nav>', '<menu>', '<header>', '<links>'], correct: 0 },
+  { question: 'Какой тег используется для воспроизведения видео файлов?', options: ['<media>', '<movie>', '<video>', '<source>'], correct: 2 },
+  { question: 'Какое свойство тега <input> делает поле обязательным для заполнения?', options: ['important', 'required', 'validate', 'lock'], correct: 1 },
+  { question: 'Какая кодировка является стандартом для современных HTML-документов?', options: ['UTF-8', 'Windows-1251', 'ASCII', 'ISO-8859-1'], correct: 0 },
+  { question: 'Что делает тег <iframe>?', options: ['Создает анимацию', 'Встраивает другую веб-страницу внутрь текущей', 'Подключает шрифты', 'Отрисовывает рамку'], correct: 1 },
+
+  // === CSS (21-40) ===
+  { question: 'Что означает аббревиатура CSS?', options: ['Computer Style Sheets', 'Cascading Style Sheets', 'Creative Style Systems', 'Colorful Style Sheets'], correct: 1 },
+  { question: 'Какое свойство меняет цвет текста в CSS?', options: ['text-color', 'font-color', 'color', 'background-color'], correct: 2 },
+  { question: 'Какое свойство отвечает за размер шрифта?', options: ['text-size', 'font-size', 'size', 'font-weight'], correct: 1 },
+  { question: 'Какое свойство используется для изменения фона элемента?', options: ['background-color', 'color', 'backdrop', 'bg'], correct: 0 },
+  { question: 'Как правильно обратиться к элементу с id="header" в CSS?', options: ['.header', '#header', 'header', '*header'], correct: 1 },
+  { question: 'Какое свойство задает внутренний отступ элемента?', options: ['margin', 'border', 'padding', 'spacing'], correct: 2 },
+  { question: 'Какое свойство задает внешний отступ элемента?', options: ['padding', 'margin', 'outline', 'offset'], correct: 1 },
+  { question: 'Какое значение свойства display включает Flexbox?', options: ['box', 'flex', 'grid', 'block'], correct: 1 },
+  { question: 'С помощью какого свойства можно сделать текст жирным?', options: ['font-style', 'text-bold', 'font-weight', 'font-size'], correct: 2 },
+  { question: 'Какое свойство управляет прозрачностью элемента?', options: ['visible', 'filter', 'clear', 'opacity'], correct: 3 },
+  { question: 'Как добавить рамку элементу в CSS?', options: ['border: 1px solid black;', 'stroke: 1px;', 'outline-color: black;', 'frame: solid 1px;'], correct: 0 },
+  { question: 'Какое свойство скругляет углы элементов?', options: ['border-radius', 'corner-shape', 'border-curve', 'radius'], correct: 0 },
+  { question: 'Какое свойство выравнивает флекс-элементы по главной оси?', options: ['align-items', 'justify-content', 'text-align', 'align-content'], correct: 1 },
+  { question: 'Какое значение свойства position оставляет элемент в потоке, но позволяет двигать его относительно себя?', options: ['absolute', 'fixed', 'static', 'relative'], correct: 3 },
+  { question: 'Как скрыть элемент с экрана, чтобы он не занимал место?', options: ['display: none;', 'visibility: hidden;', 'opacity: 0;', 'scale: 0;'], correct: 0 },
+  { question: 'Какое CSS свойство изменяет регистр букв (например, делает все заглавными)?', options: ['text-transform', 'font-variant', 'text-decoration', 'capitalize'], correct: 0 },
+  { question: 'Какое значение свойства z-index будет находиться выше остальных?', options: ['0', '1', '-10', '999'], correct: 3 },
+  { question: 'Какое свойство задает расстояние между строками текста?', options: ['letter-spacing', 'line-height', 'row-gap', 'text-spacing'], correct: 1 },
+  { question: 'Как выбрать все элементы <p> внутри <div>?', options: ['div.p', 'div p', 'div + p', 'div > p только'], correct: 1 },
+  { question: 'Что делает директива @media в CSS?', options: ['Импортирует видеоклипы', 'Используется для создания адаптивного дизайна под разные экраны', 'Подключает аудиоэффекты', 'Служит комментарием'], correct: 1 },
+
+  // === JavaScript (41-60) ===
+  { question: 'Как правильно объявить переменную, которую можно изменить?', options: ['const x = 5;', 'let x = 5;', 'variable x = 5;', 'int x = 5;'], correct: 1 },
+  { question: 'Какой оператор используется для строгого сравнения (и значений, и типов)?', options: ['=', '==', '===', '!='], correct: 2 },
+  { question: 'Как вывести сообщение в консоль браузера?', options: ['alert()', 'document.write()', 'console.log()', 'print()'], correct: 2 },
+  { question: 'Какой тип данных вернет оператор typeof null?', options: ['"null"', '"undefined"', '"object"', '"number"'], correct: 2 },
+  { question: 'Как создать функцию в JavaScript?', options: ['function myFunction()', 'create function myFunction()', 'function:myFunction()', 'new Function()'], correct: 0 },
+  { question: 'Какой метод добавляет элемент в конец массива?', options: ['pop()', 'push()', 'shift()', 'unshift()'], correct: 1 },
+  { question: 'Как правильно написать комментарий в JavaScript?', options: ['', '# Комментарий', '/* Комментарий */ или //', '\' Комментарий'], correct: 2 },
+  { question: 'Какой метод превращает строку в целое число?', options: ['parseInt()', 'Number.floor()', 'String.toInt()', 'Math.cast()'], correct: 0 },
+  { question: 'Как округлить число 4.7 до ближайшего целого (5)?', options: ['Math.floor(4.7)', 'Math.round(4.7)', 'Math.ceil(4.7)', 'Math.abs(4.7)'], correct: 1 },
+  { question: 'Какое событие происходит при клике мышкой на HTML-элемент?', options: ['onmouseover', 'onchange', 'onclick', 'onsubmit'], correct: 2 },
+  { question: 'Что делает метод Array.map()?', options: ['Фильтрует элементы', 'Удаляет элементы', 'Создает новый массив, изменяя каждый элемент функцией', 'Сортирует массив'], correct: 2 },
+  { question: 'Какое ключевое слово используется для перехвата ошибок в JS?', options: ['try...catch', 'throw...error', 'error...handle', 'if...else'], correct: 0 },
+  { question: 'Какое значение вернет выражение: "5" + 5?', options: ['10', '"55"', 'NaN', 'Error'], correct: 1 },
+  { question: 'Как проверить, является ли переменная NaN?', options: ['variable === NaN', 'isNaN(variable)', 'typeof variable == "nan"', 'checkNaN()'], correct: 1 },
+  { question: 'Какой метод преобразует JS-объект в строку JSON?', options: ['JSON.parse()', 'JSON.stringify()', 'JSON.toString()', 'Object.toJSON()'], correct: 1 },
+  { question: 'Что такое замыкание (closure) в JavaScript?', options: ['Функция, которая закрывает вкладку браузера', 'Функция вместе со своим лексическим окружением (доступ к внешним переменным)', 'Метод остановки циклов', 'Удаление кода из памяти'], correct: 1 },
+  { question: 'Какое ключевое слово возвращает результат выполнения функции?', options: ['give', 'result', 'return', 'break'], correct: 2 },
+  { question: 'Какой метод удаляет последний элемент из массива?', options: ['pop()', 'push()', 'shift()', 'splice()'], correct: 0 },
+  { question: 'Каким будет результат выражения: Boolean("false")?', options: ['false', 'true', 'null', 'undefined'], correct: 1 },
+  { question: 'Какое ключевое слово позволяет создать класс в современном JavaScript?', options: ['prototype', 'class', 'struct', 'new Object'], correct: 1 }
+];
+
+// Хранилище сессий пользователей
+const userSessions = new Map();
+
+// Главное меню
+function getMainMenuKeyboard() {
+  return Markup.keyboard([
+    ['🚀 Начать викторину'],
+    ['📊 Мой счет', '🔄 Сбросить прогресс']
+  ]).resize();
+}
+
+// Отправка вопроса с инлайн-кнопками вариантов ответа
+async function sendQuestion(ctx, questionIndex) {
+  const q = quizQuestions[questionIndex];
+  
+  // Генерируем уникальный Callback-data для каждого ответа
+  const buttons = q.options.map((option, index) => 
+    Markup.button.callback(option, `quiz_${questionIndex}_${index}`)
+  );
+  
+  // Разделяем кнопки: по 1 кнопке на строку для лучшей читаемости длинного текста ответов
+  const keyboard = buttons.map(btn => [btn]);
+  
+  // Определяем категорию для красивого визуала
+  let category = '🌐 HTML';
+  if (questionIndex >= 20 && questionIndex < 40) category = '🎨 CSS';
+  if (questionIndex >= 40) category = '⚡ JavaScript';
+
+  await ctx.reply(
+    `🔹 *Категория:* ${category}\n` +
+    `📝 *Вопрос:* ${questionIndex + 1}/${quizQuestions.length}\n\n` +
+    `*${q.question}*`,
+    {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard(keyboard)
+    }
+  );
+}
+
+// Команда /start
+bot.start(async (ctx) => {
+  const welcomeMessage = `👋 *Привет, будущий Senior-разработчик!*\n\n` +
+    `Добро пожаловать в мега-викторину по веб-технологиям.\n` +
+    `Тебя ждут *${quizQuestions.length} вопросов* по HTML, CSS и JavaScript.\n\n` +
+    `Проверь свой уровень знаний прямо сейчас! Нажми кнопку ниже. 👇`;
+  
+  await ctx.reply(welcomeMessage, { parse_mode: 'Markdown', ...getMainMenuKeyboard() });
+});
+
+// Команда /help
+bot.help(async (ctx) => {
+  await ctx.reply(
+    '🤖 *Справка по боту:*\n\n' +
+    '🚀 *Начать викторину* — запускает тест сначала.\n' +
+    '📊 *Мой счет* — показывает текущие успехи.\n' +
+    '🔄 *Сбросить прогресс* — обнуляет результаты.\n\n' +
+    'Викторина состоит из 3 блоков по 20 вопросов. Удачи!',
+    { parse_mode: 'Markdown' }
+  );
+});
+
+// Обработка кликов по вариантам ответов
+bot.action(/quiz_(\d+)_(\d+)/, async (ctx) => {
+  const chatId = ctx.chat.id;
+  const questionIndex = parseInt(ctx.match[1]);
+  const selectedOption = parseInt(ctx.match[2]);
+  
+  // Защита: инициализируем сессию, если её нет
+  if (!userSessions.has(chatId)) {
+    userSessions.set(chatId, { score: 0, currentQuestion: 0 });
+  }
+  
+  const session = userSessions.get(chatId);
+  
+  // Защита от повторного нажатия на старые кнопки
+  if (questionIndex !== session.currentQuestion) {
+    await ctx.answerCbQuery('⚠️ Этот вопрос уже неактивен.');
+    return;
+  }
+  
+  const question = quizQuestions[questionIndex];
+  const isCorrect = selectedOption === question.correct;
+  
+  if (isCorrect) {
+    session.score += 1;
+  }
+  
+  // Удаляем сообщение с вопросом, чтобы не засорять чат
+  await ctx.deleteMessage().catch(() => {});
+  
+  // Красивый фидбек в чат
+  const feedback = isCorrect 
+    ? `✅ *Правильно!*\n↳ _${question.options[question.correct]}_` 
+    : `❌ *Неверно!*\n↳ Правильный ответ: *${question.options[question.correct]}*`;
+  
+  await ctx.reply(feedback, { parse_mode: 'Markdown' });
+  
+  // Переходим к следующему вопросу
+  session.currentQuestion += 1;
+  
+  // Проверяем окончание викторины
+  if (session.currentQuestion >= quizQuestions.length) {
+    const finalScore = session.score;
+    const percentage = Math.round((finalScore / quizQuestions.length) * 100);
+    
+    let grade = '';
+    if (percentage >= 90) grade = '🏆 *Феноменально! Вы настоящий Fullstack Senior!*';
+    else if (percentage >= 70) grade = '🌟 *Отличный результат! Уровень Middle разработчика!*';
+    else if (percentage >= 50) grade = '👍 *Хорошо! Базовые знания Junior на месте!*';
+    else grade = '📚 *Нужно подтянуть теорию! Почитайте MDN Web Docs.*';
+    
+    const resultMessage = `🎉 *Викторина полностью завершена!* 🎉\n\n` +
+      `📊 Ваш итоговый результат: *${finalScore} из ${quizQuestions.length}*\n` +
+      `📈 Процент правильных ответов: *${percentage}%*\n\n` +
+      `${grade}\n\n` +
+      `Вы можете начать заново, нажав кнопку ниже!`;
+    
+    await ctx.reply(resultMessage, { parse_mode: 'Markdown', ...getMainMenuKeyboard() });
+    userSessions.delete(chatId); // Удаляем сессию после финиша
+  } else {
+    // Отправляем следующий вопрос
+    await sendQuestion(ctx, session.currentQuestion);
+  }
+  
+  await ctx.answerCbQuery();
+});
+
+// Обработка текстовых команд меню
+bot.on('text', async (ctx) => {
+  const chatId = ctx.chat.id;
+  const text = ctx.message.text;
+  
+  if (text === '🚀 Начать викторину') {
+    userSessions.set(chatId, { score: 0, currentQuestion: 0 });
+    await ctx.reply('🏁 Викторина началась! Удачи!');
+    await sendQuestion(ctx, 0);
+  } 
+  else if (text === '📊 Мой счет') {
+    if (userSessions.has(chatId)) {
+      const session = userSessions.get(chatId);
+      await ctx.reply(`📊 *Ваш текущий прогресс:*\nПравильных ответов: *${session.score}*\nПройдено вопросов: *${session.currentQuestion}/${quizQuestions.length}*`, { parse_mode: 'Markdown' });
+    } else {
+      await ctx.reply('📊 Вы еще не начали викторину. Нажмите *🚀 Начать викторину*.', { parse_mode: 'Markdown' });
+    }
+  } 
+  else if (text === '🔄 Сбросить прогресс') {
+    userSessions.delete(chatId);
+    await ctx.reply('🔄 Прогресс успешно сброшен. Вы можете начать тест заново!', getMainMenuKeyboard());
+  }
+  else if (text !== '/start' && text !== '/help') {
+    await ctx.reply('🧩 Пожалуйста, используйте кнопки меню для управления викториной!', getMainMenuKeyboard());
+  }
+});
+
+// Глобальная обработка ошибок
+bot.catch((err, ctx) => {
+  console.error('Ошибка в боте:', err);
+  ctx.reply('⚠️ Произошла непредвиденная ошибка в коде. Попробуйте еще раз позже.');
+});
+
+// Запуск бота
+bot.launch().then(() => {
+  console.log('🚀 Бот викторины по WEB-разработке успешно запущен!');
+});
+
+// Корректное завершение работы
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
+
