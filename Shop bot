@@ -1,0 +1,326 @@
+import { Telegraf, Markup } from 'telegraf';
+
+// ==========================================
+// 🔑 TOKENLAR
+// ==========================================
+const BOT_TOKEN = "8880237201:AAFinlLFVn1TZCq0rI6ld38_YAXc4f_kNWc";
+const PROVIDER_TOKEN = "1877052891:TEST:totum"; 
+
+const bot = new Telegraf(BOT_TOKEN);
+
+// ==========================================
+// 📦 MA'LUMOTLAR BAZASI
+// ==========================================
+const db = {
+  users: new Map(), 
+  categories: [
+    { title: '💻 IT & Texnologiyalar', slug: 'it', image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&auto=format&fit=crop' },
+    { title: '🤖 Sun\'iy Intellekt', slug: 'ai', image: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=600&auto=format&fit=crop' },
+    { title: '⚽ Sport Yangiliklari', slug: 'sport', image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop' }
+  ],
+  articles: [
+    {
+      _id: 'art_1',
+      title: 'Sun\'iy intellekt sohasidagi inqilob!',
+      content: 'Bugungi kunda sun\'iy intellekt nafaqat matn yozmoqda, balki murakkab loyihalarni ham mustaqil yaratmoqda. Ekspertlar buni IT sohasidagi eng katta sakrash deb baholashmoqda.',
+      slug: 'ai',
+      image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=600&auto=format&fit=crop',
+      views: 0
+    },
+    {
+      _id: 'art_2',
+      title: 'Kiberxavfsizlik va yangi tahdidlar',
+      content: 'Butun dunyo bo\'ylab xakerlik hujumlari soni ortdi. Mutaxassislar foydalanuvchilarga ikki bosqichli autentifikatsiyani yoqishni va shubhali havolalarga kirmaslikni qat\'iy tavsiya qiladi.',
+      slug: 'it',
+      image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&auto=format&fit=crop',
+      views: 0
+    }
+  ],
+  // Boshlang'ich do'kon mahsulotlari (Rasmlar to'liq tuzatildi)
+  products: [
+    { id: 'prod_1', title: 'Premium Obuna (1 oylik)', description: 'Eksklyuziv maqolalar va yopiq IT-tahlillarga to\'liq kirish huquqi.', price: 50000, image: 'https://images.unsplash.com/photo-1563013544-824ae1d704d3?w=600&auto=format&fit=crop' },
+    { id: 'prod_2', title: 'IT Qo\'llanma 2026 (E-Kitob)', description: 'Dasturlash dunyosiga noldan kirish uchun mukammal elektron kitob.', price: 35000, image: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=600&auto=format&fit=crop' },
+    { id: 'prod_3', title: 'Telegram Bot Kursi (Node.js)', description: 'TelegrafJS yordamida professional botlar yaratishni o\'rganing.', price: 120000, image: 'https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=600&auto=format&fit=crop' }
+  ],
+  // REZERV: Har 4 daqiqada do'konga ketma-ket qo'shiladigan 17 ta unikal tovar
+  productPool: [
+    { id: 'prod_4', title: 'Python Backend Kursi', description: 'Django va FastAPI yordamida kuchli serverlar yaratish darsligi.', price: 150000, image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&auto=format&fit=crop' },
+    { id: 'prod_5', title: 'UI/UX Dizayn Asoslari', description: 'Figma dasturida zamonaviy interfeyslar va mobil ilovalar chizish.', price: 95000, image: 'https://images.unsplash.com/photo-1618788372246-79faff0c3742?w=600&auto=format&fit=crop' },
+    { id: 'prod_6', title: 'Tayyor Korporativ Sayt Kodi', description: 'HTML/CSS va JavaScriptda yozilgan to\'liq moslashuvchan korporativ veb-sayt.', price: 40000, image: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&auto=format&fit=crop' },
+    { id: 'prod_7', title: 'Node.js Mukammal qo\'llanma', description: 'Asinxron dasturlash va ma\'lumotlar oqimi bilan ishlash sirlari.', price: 60000, image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=600&auto=format&fit=crop' },
+    { id: 'prod_8', title: 'Kiberxavfsizlik qo\'llanmasi', description: 'Tizimlarni tarmoq hujumlaridan himoya qilish bo\'yicha amaliy darslik.', price: 75000, image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=600&auto=format&fit=crop' },
+    { id: 'prod_9', title: '500+ ChatGPT Prompt To\'plami', description: 'Sun\'iy intellektdan maksimal samaradorlik bilan foydalanish sirlari.', price: 25000, image: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=600&auto=format&fit=crop' },
+    { id: 'prod_10', title: 'Zamonaviy JavaScript Kursi', description: 'ES6+ standartlari, OOP va asinxron loyihalar ustida ishlash.', price: 180000, image: 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=600&auto=format&fit=crop' },
+    { id: 'prod_11', title: 'SEO Optimizatsiya Siri', description: 'Saytlarni Google va Yandex qidiruv tizimlarida top-1 o\'ringa olib chiqish.', price: 85000, image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop' },
+    { id: 'prod_12', title: 'Professional SMM darsligi', description: 'Ijtimoiy tarmoqlar uchun targeting va kontent-reja tuzish san\'ati.', price: 110000, image: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&auto=format&fit=crop' },
+    { id: 'prod_13', title: 'Premium Obuna (6 oylik)', description: 'Yarim yillik to\'liq VIP kirish va yopiq hamjamiyat a\'zoligi.', price: 250000, image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&auto=format&fit=crop' },
+    { id: 'prod_14', title: 'Data Science va Tahlil', description: 'NumPy, Pandas va Matplotlib yordamida katta ma\'lumotlar bilan ishlash.', price: 130000, image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&auto=format&fit=crop' },
+    { id: 'prod_15', title: 'Flutter Mobil Ilova Shabloni', description: 'Android va iOS uchun tayyor, chiroyli dizaynga ega internet do\'kon kodi.', price: 200000, image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&auto=format&fit=crop' },
+    { id: 'prod_16', title: 'IT English qo\'llanmasi', description: 'Dasturchilar va suhbatlardan muvaffaqiyatli o\'tish uchun maxsus ingliz tili.', price: 45000, image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop' },
+    { id: 'prod_17', title: 'Ma\'lumotlar Bazasi (SQL & NoSQL)', description: 'PostgreSQL va MongoDB tizimlarini mukammal darajada o\'rganing.', price: 70000, image: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=600&auto=format&fit=crop' },
+    { id: 'prod_18', title: 'DevOps: Docker & CI/CD', description: 'Loyihalarni avtomatlashtirilgan holda serverga yuklash va boshqarish.', price: 160000, image: 'https://images.unsplash.com/photo-1607799279861-4dd421887fb3?w=600&auto=format&fit=crop' },
+    { id: 'prod_19', title: 'Blokcheyn va Kriptovalyutalar', description: 'Aqlli kontraktlar (Smart Contracts) va Web3 texnologiyalari asosi.', price: 90000, image: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=600&auto=format&fit=crop' },
+    { id: 'prod_20', title: 'Premium Obuna (1 yillik)', description: 'Eng katta chegirmaga ega bo\'lgan yillik to\'liq VIP tarif rejasi.', price: 450000, image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&auto=format&fit=crop' }
+  ]
+};
+
+let currentGlobalNewsIndex = 0;
+
+function initUser(id, firstName) {
+  if (!db.users.has(id)) {
+    db.users.set(id, {
+      telegramId: id,
+      fullName: firstName,
+      favorites: [],
+      purchases: [],
+      createdAt: new Date().toLocaleDateString()
+    });
+  }
+  return db.users.get(id);
+}
+
+function getMainMenu() {
+  return Markup.keyboard([
+    ['📰 So\'nggi maqolalar', '📚 Kategoriyalar'],
+    ['🛍 Do\'kon', '🔍 Qidiruv'],
+    ['⭐ Sevimlilar', '👤 Profil']
+  ]).resize();
+}
+
+function getNewsInlineKeyboard(artId) {
+  return Markup.inlineKeyboard([
+    [Markup.button.callback('➡️ Navbatdagi yangilik', 'global_next_news')],
+    [Markup.button.callback('❤️ Saqlash', `fav_${artId}`), Markup.button.callback('🔗 Ulashish', `share_${artId}`)]
+  ]);
+}
+
+// ==========================================
+// 🚀 BOT INTERFEYSI
+// ==========================================
+
+bot.start(async (ctx) => {
+  const user = initUser(ctx.from.id, ctx.from.first_name);
+  await ctx.replyWithPhoto('https://images.unsplash.com/photo-1468421870903-4df1664ac249?w=600&auto=format&fit=crop', {
+    caption: `👋 <b>Salom, ${user.fullName}!</b>\n\n📖 <b>Magazine & Digital Shop</b> botiga xush kelibsiz.\n\n🔥 Do'konimiz to'liq avtomatlashtirilgan. Har 4 daqiqada yangi unikal tovarlar (20 tagacha) va yangi xabarlar qo'shilib boradi. Xaridlarni karta orqali to'g'ridan-to'g'ri amalga oshirishingiz mumkin!`,
+    parse_mode: 'HTML',
+    ...getMainMenu()
+  });
+});
+
+// 🛍 DO'KON VITRINASI (TUZATILGAN VA ISHLAYDI)
+bot.hears('🛍 Do\'kon', async (ctx) => {
+  initUser(ctx.from.id, ctx.from.first_name);
+  
+  await ctx.replyWithPhoto('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&auto=format&fit=crop', {
+    caption: `🛍 <b>Raqamli mahsulotlar vitrinasi (Jami: ${db.products.length}/20):</b>\n\nKerakli mahsulot ostidagi tugmani bosing va xavfsiz to'lov oynasini oching:`,
+    parse_mode: 'HTML'
+  });
+
+  for (const prod of db.products) {
+    const buyKeyboard = Markup.inlineKeyboard([
+      [Markup.button.callback(`💳 Sotib olish - ${prod.price.toLocaleString()} UZS`, `buy_${prod.id}`)]
+    ]);
+
+    await ctx.replyWithPhoto(prod.image, {
+      caption: `📦 <b>${prod.title}</b>\n\n📝 ${prod.description}\n\n💰 <b>Narxi:</b> ${prod.price.toLocaleString()} UZS`,
+      parse_mode: 'HTML',
+      ...buyKeyboard
+    });
+  }
+});
+
+// KARTA ORQALI TO'LOV TIZIMI (INVOICE)
+bot.action(/buy_(.+)/, async (ctx) => {
+  const prodId = ctx.match[1];
+  let prod = db.products.find(p => p.id === prodId) || db.productPool.find(p => p.id === prodId);
+
+  if (!prod) return ctx.answerCbQuery('Mahsulot topilmadi.');
+  await ctx.answerCbQuery();
+
+  try {
+    await ctx.replyWithInvoice({
+      provider_token: PROVIDER_TOKEN,
+      start_parameter: 'shop_payment',
+      title: prod.title,
+      description: prod.description,
+      currency: 'UZS',
+      prices: [{ label: prod.title, amount: prod.price * 100 }], 
+      payload: prod.id,
+      photo_url: prod.image, 
+      photo_width: 600,
+      photo_height: 400
+    });
+  } catch (error) {
+    console.error("To'lov xatoligi:", error);
+    await ctx.reply("❌ To'lov tizimini yuklashda xatolik yuz berdi.");
+  }
+});
+
+bot.on('pre_checkout_query', (ctx) => ctx.answerPreCheckoutQuery(true));
+
+bot.on('successful_payment', async (ctx) => {
+  const user = initUser(ctx.from.id, ctx.from.first_name);
+  const prodId = ctx.message.successful_payment.invoice_payload;
+  let prod = db.products.find(p => p.id === prodId) || db.productPool.find(p => p.id === prodId);
+
+  if (prod) {
+    user.purchases.push(prod.title);
+    await ctx.reply(`🎉 <b>Xarid muvaffaqiyatli yakunlandi!</b>\n\nSiz <b>${prod.title}</b> mahsulotini karta orqali muvaffaqiyatli sotib oldingiz!`, { parse_mode: 'HTML' });
+  }
+});
+
+// 📰 YANGILIKLAR LENTASI
+bot.hears('📰 So\'nggi maqolalar', async (ctx) => {
+  initUser(ctx.from.id, ctx.from.first_name);
+  const currentNews = db.articles[currentGlobalNewsIndex];
+  await ctx.replyWithPhoto(currentNews.image, {
+    caption: `📰 <b>${currentNews.title}</b>\n\n${currentNews.content}`,
+    parse_mode: 'HTML',
+    ...getNewsInlineKeyboard(currentNews._id)
+  });
+});
+
+bot.action('global_next_news', async (ctx) => {
+  initUser(ctx.from.id, ctx.from.first_name);
+  currentGlobalNewsIndex = (currentGlobalNewsIndex + 1) % db.articles.length;
+  const nextNews = db.articles[currentGlobalNewsIndex];
+
+  try {
+    await ctx.editMessageMedia({
+      type: 'photo',
+      media: nextNews.image, 
+      caption: `📰 <b>${nextNews.title}</b>\n\n${nextNews.content}`,
+      parse_mode: 'HTML'
+    }, getNewsInlineKeyboard(nextNews._id));
+  } catch (err) {
+    await ctx.answerCbQuery('Yangilandi!');
+  }
+});
+
+// 📚 KATEGORIYALAR
+bot.hears('📚 Kategoriyalar', async (ctx) => {
+  const buttons = db.categories.map(cat => [Markup.button.callback(cat.title, `cat_${cat.slug}`)]);
+  await bot.telegram.sendPhoto(ctx.chat.id, 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop', {
+    caption: '🗂 <b>Ruknni tanlang:</b>',
+    parse_mode: 'HTML',
+    ...Markup.inlineKeyboard(buttons)
+  });
+});
+
+bot.action(/cat_(.+)/, async (ctx) => {
+  const slug = ctx.match[1];
+  const filtered = db.articles.filter(a => a.slug === slug);
+  if (filtered.length === 0) return ctx.reply('ℹ️ Bo\'limda maqolalar mavjud emas.');
+
+  for (const art of filtered) {
+    await ctx.replyWithPhoto(art.image, { 
+      caption: `📰 <b>${art.title}</b>\n\n${art.description}`,
+      parse_mode: 'HTML',
+      ...getNewsInlineKeyboard(art._id)
+    });
+  }
+  await ctx.answerCbQuery();
+});
+
+// ⭐ SEVIMLILAR
+bot.action(/fav_(.+)/, async (ctx) => {
+  const user = initUser(ctx.from.id, ctx.from.first_name);
+  if (!user.favorites.includes(ctx.match[1])) {
+    user.favorites.push(ctx.match[1]);
+    await ctx.answerCbQuery('❤️ Sevimlilarga saqlandi!', { show_alert: true });
+  } else {
+    await ctx.answerCbQuery('ℹ️ Ro\'yxatda mavjud.');
+  }
+});
+
+bot.hears('⭐ Sevimlilar', async (ctx) => {
+  const user = initUser(ctx.from.id, ctx.from.first_name);
+  if (user.favorites.length === 0) {
+    return ctx.replyWithPhoto('https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=600&auto=format&fit=crop', { caption: '⭐ Sevimlilar ro\'yxati bo\'sh.' });
+  }
+  for (const artId of user.favorites) {
+    const art = db.articles.find(a => a._id === artId);
+    if (art) await ctx.replyWithPhoto(art.image, { caption: `⭐ ${art.title}` });
+  }
+});
+
+bot.hears('🔍 Qidiruv', async (ctx) => {
+  await ctx.replyWithPhoto('https://images.unsplash.com/photo-1506783365847-bbad939e9335?w=600&auto=format&fit=crop', { caption: '🔎 Qidiruv bo\'limi. Yangilik sarlavhasini yozib yuboring:' });
+});
+
+// 👤 PROFIL
+bot.hears('👤 Profil', async (ctx) => {
+  const user = initUser(ctx.from.id, ctx.from.first_name);
+  const profileAvatar = `https://api.dicebear.com/7.x/identicon/png?seed=${user.telegramId}`; 
+  const profileText = `👤 <b>Profilingiz ma\'lumotlari:</b>\n\n🆔 <b>ID:</b> <code>${user.telegramId}</code>\n✍️ <b>Ism:</b> ${user.fullName}\n📅 <b>Sana:</b> ${user.createdAt}\n⭐ <b>Sevimlilar:</b> ${user.favorites.length} ta\n🛍 <b>Xarid qilinganlar:</b> ${user.purchases.length > 0 ? user.purchases.join(', ') : 'Hozircha yo\'q'}`;
+  
+  try {
+    await ctx.replyWithPhoto(profileAvatar, { caption: profileText, parse_mode: 'HTML' });
+  } catch (err) {
+    await ctx.reply(profileText, { parse_mode: 'HTML' });
+  }
+});
+
+bot.on('text', async (ctx) => {
+  const query = ctx.message.text.trim().toLowerCase();
+  const filtered = db.articles.filter(a => a.title.toLowerCase().includes(query));
+  for (const art of filtered) {
+    await ctx.replyWithPhoto(art.image, { 
+      caption: `📰 <b>${art.title}</b>\n\n${art.content}`,
+      parse_mode: 'HTML',
+      ...getNewsInlineKeyboard(art._id)
+    });
+  }
+});
+
+// ==========================================
+// ⏰ TAYMER 1: YANGILIKLAR ROTATSIYASI (4 MINUT)
+// ==========================================
+setInterval(async () => {
+  if (db.users.size === 0 || db.articles.length === 0) return;
+
+  currentGlobalNewsIndex = (currentGlobalNewsIndex + 1) % db.articles.length;
+  const currentNews = db.articles[currentGlobalNewsIndex];
+
+  for (const userId of db.users.keys()) {
+    try {
+      await bot.telegram.sendPhoto(userId, currentNews.image, { 
+        caption: `🔔 <b>Yangi maqola! (Har 4 daqiqada):</b>\n\n<b>${currentNews.title}</b>\n\n${currentNews.content}`,
+        parse_mode: 'HTML',
+        ...getNewsInlineKeyboard(currentNews._id)
+      });
+    } catch (err) {
+      if (err.description && err.description.includes('forbidden')) db.users.delete(userId); 
+    }
+  }
+}, 4 * 60 * 1000); 
+
+// ==========================================
+// ⏰ TAYMER 2: YANGI MAHSULOT QO'SHILISHI (4 MINUT, MAX 20)
+// ==========================================
+setInterval(async () => {
+  if (db.products.length >= 20 || db.productPool.length === 0 || db.users.size === 0) return;
+
+  const newProduct = db.productPool.shift(); 
+  db.products.push(newProduct);
+
+  for (const userId of db.users.keys()) {
+    try {
+      const buyKeyboard = Markup.inlineKeyboard([
+        [Markup.button.callback(`💳 Sotib olish - ${newProduct.price.toLocaleString()} UZS`, `buy_${newProduct.id}`)]
+      ]);
+
+      await bot.telegram.sendPhoto(userId, newProduct.image, {
+        caption: `🛍 <b>Do'konga yangi eksklyuziv mahsulot qo'shildi!</b>\n\n📦 <b>${newProduct.title}</b>\n\n📝 ${newProduct.description}\n\n💰 <b>Narxi:</b> ${newProduct.price.toLocaleString()} UZS\n\n<i>Vitrinadagi jami tovarlar: ${db.products.length}/20 ta.</i>`,
+        parse_mode: 'HTML',
+        ...buyKeyboard
+      });
+    } catch (err) {
+      if (err.description && err.description.includes('forbidden')) db.users.delete(userId);
+    }
+  }
+}, 4 * 60 * 1000); 
+
+bot.catch((err) => console.error('Tizim xatoligi:', err));
+
+bot.launch(() => console.log('🚀 Бот полностью исправлен, товары отображаются корректно!'));
